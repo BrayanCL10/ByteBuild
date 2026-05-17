@@ -20,7 +20,7 @@ export default function SplashPage() {
       {/* Fondo: imagen fullscreen */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
         <Image
-          src="/imagenes/cochabamba.jpg"
+          src="/imagenes/cachabamba.png"
           alt="Cochabamba"
           fill
           style={{ objectFit: 'cover', objectPosition: 'center' }}
@@ -40,7 +40,7 @@ export default function SplashPage() {
         animation: 'fadeIn 1s ease-out',
       }}>
         <Image
-          src="/imagenes/logo-recipoint.jpg"
+          src="/imagenes/logo-recipoint.png"
           alt="ReciPoint"
           width={140}
           height={140}

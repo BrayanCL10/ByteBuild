@@ -8,6 +8,17 @@ export interface User {
   avatar?: string;
   createdAt: Date;
   updatedAt: Date;
+  id_usuario?: string;
+  id_rol?: number;
+  estado?: number;
+  username?: string;
+  url_foto_perfil?: string;
+  google_id?: string;
+  fecha_nac?: string;
+  genero?: string;
+  telefono?: string;
+  puntos_totales?: number;
+  puntos_canjeados?: number;
 }
 
 export interface AuthUser {

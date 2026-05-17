@@ -2,18 +2,29 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from '@/lib/auth';
 
 export default function LoginForm() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: conectar con lib/auth.ts
-    // await signIn(email, password);
-    router.push('/home');
+    setError('');
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      router.push('/home');
+    } catch (err) {
+      setError((err as Error).message || 'Error en el inicio de sesión');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,9 +79,15 @@ export default function LoginForm() {
         ¿Olvidaste tu contraseña?
       </div>
 
+      {error ? (
+        <div style={{ color: '#C53030', textAlign: 'center', marginBottom: 12, fontSize: '0.86rem' }}>
+          {error}
+        </div>
+      ) : null}
+
       {/* Submit */}
-      <button type="submit" style={submitBtnStyle}>
-        Iniciar Sesión
+      <button type="submit" style={{ ...submitBtnStyle, opacity: loading ? 0.7 : 1 }} disabled={loading}>
+        {loading ? 'Cargando...' : 'Iniciar Sesión'}
       </button>
 
       {/* Switch */}

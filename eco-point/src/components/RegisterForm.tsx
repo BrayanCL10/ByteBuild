@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signUp, signIn } from '@/lib/auth';
 
 export default function RegisterForm() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     nombre: '', apellido: '', correo: '', ci: '', password: '', confirm: '',
   });
@@ -14,15 +17,24 @@ export default function RegisterForm() {
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (form.password !== form.confirm) {
-      alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
-    // TODO: conectar con lib/auth.ts
-    // await signUp(form);
-    router.push('/home');
+
+    setLoading(true);
+    try {
+      await signUp(form);
+      await signIn(form.correo, form.password);
+      router.push('/home');
+    } catch (err) {
+      setError((err as Error).message || 'Error en el registro');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -97,8 +109,16 @@ export default function RegisterForm() {
         </div>
       </div>
 
+      {error ? (
+        <div style={{ color: '#C53030', textAlign: 'center', marginBottom: 12, fontSize: '0.86rem' }}>
+          {error}
+        </div>
+      ) : null}
+
       {/* Submit */}
-      <button type="submit" style={submitBtnStyle}>Crear Cuenta</button>
+      <button type="submit" style={{ ...submitBtnStyle, opacity: loading ? 0.7 : 1 }} disabled={loading}>
+        {loading ? 'Cargando...' : 'Crear Cuenta'}
+      </button>
 
       {/* Switch */}
       <p style={{ textAlign: 'center', fontSize: '0.76rem', color: '#888', marginTop: 14 }}>

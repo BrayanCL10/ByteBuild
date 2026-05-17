@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model alertas_contenedor {
+  id_alerta     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_contenedor String       @db.Uuid
+  tipo_alerta   String       @db.VarChar
+  nivel_pct     Int?         @db.SmallInt
+  mensaje       String?
+  resuelta      Boolean      @default(false)
+  creado_en     DateTime     @default(now()) @db.Timestamptz(6)
+  resuelta_en   DateTime?    @db.Timestamptz(6)
+  contenedores  contenedores @relation(fields: [id_contenedor], references: [id_contenedor], onDelete: Cascade, onUpdate: NoAction, map: "alertas_contenedor_fk")
+
+  @@index([id_contenedor, resuelta], map: "idx_alertas_contenedor")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model canjes {
+  id_canje       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario     String    @db.Uuid
+  puntos_usados  Int
+  tipo_beneficio String    @db.VarChar
+  detalle        String?
+  monto_bs       Decimal?  @db.Decimal(8, 2)
+  estado         String    @default("procesando") @db.VarChar
+  creado_en      DateTime  @default(now()) @db.Timestamptz(6)
+  procesado_en   DateTime? @db.Timestamptz(6)
+  usuarios       usuarios  @relation(fields: [id_usuario], references: [id_usuario], onUpdate: NoAction, map: "canjes_usuario_fk")
+
+  @@index([id_usuario], map: "idx_canjes_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contenedor_residuos {
+  id_contenedor String        @db.Uuid
+  id_tipo       String        @db.Uuid
+  contenedores  contenedores  @relation(fields: [id_contenedor], references: [id_contenedor], onDelete: Cascade, onUpdate: NoAction, map: "cr_contenedor_fk")
+  tipos_residuo tipos_residuo @relation(fields: [id_tipo], references: [id_tipo], onDelete: Cascade, onUpdate: NoAction, map: "cr_tipo_fk")
+
+  @@id([id_contenedor, id_tipo])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model contenedores {
+  id_contenedor        String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codigo               String                    @unique @db.VarChar
+  nombre_ubicacion     String                    @db.VarChar
+  direccion_texto      String?                   @db.VarChar
+  referencia           String?                   @db.VarChar
+  latitud              Decimal                   @db.Decimal(10, 7)
+  longitud             Decimal                   @db.Decimal(10, 7)
+  geom                 Unsupported("geography")?
+  google_place_id      String?                   @db.VarChar
+  google_maps_url      String?
+  nivel_llenado_pct    Int                       @default(0) @db.SmallInt
+  umbral_alerta_pct    Int                       @default(85) @db.SmallInt
+  alerta_activa        Boolean                   @default(false)
+  activo               Boolean                   @default(true)
+  ultima_actualizacion DateTime                  @default(now()) @db.Timestamptz(6)
+  creado_en            DateTime                  @default(now()) @db.Timestamptz(6)
+  alertas_contenedor   alertas_contenedor[]
+  contenedor_residuos  contenedor_residuos[]
+  depositos            depositos[]
+
+  @@index([geom], map: "idx_contenedores_geom", type: Gist)
+  @@index([nombre_ubicacion(ops: raw("gin_trgm_ops"))], map: "idx_contenedores_nombre", type: Gin)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model deposito_items {
+  id_item         String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_deposito     String        @db.Uuid
+  id_tipo_residuo String        @db.Uuid
+  cantidad        Int           @default(0)
+  puntos_subtotal Int           @default(0)
+  depositos       depositos     @relation(fields: [id_deposito], references: [id_deposito], onDelete: Cascade, onUpdate: NoAction, map: "deposito_items_deposito_fk")
+  tipos_residuo   tipos_residuo @relation(fields: [id_tipo_residuo], references: [id_tipo], onUpdate: NoAction, map: "deposito_items_tipo_fk")
+
+  @@index([id_deposito], map: "idx_deposito_items_dep")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model depositos {
+  id_deposito      String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario       String             @db.Uuid
+  id_contenedor    String             @db.Uuid
+  qr_transaccion   String             @unique
+  puntos_generados Int                @default(0)
+  estado           String             @default("pendiente") @db.VarChar
+  creado_en        DateTime           @default(now()) @db.Timestamptz(6)
+  escaneado_en     DateTime?          @db.Timestamptz(6)
+  deposito_items   deposito_items[]
+  contenedores     contenedores       @relation(fields: [id_contenedor], references: [id_contenedor], onUpdate: NoAction, map: "depositos_contenedor_fk")
+  usuarios         usuarios           @relation(fields: [id_usuario], references: [id_usuario], onUpdate: NoAction, map: "depositos_usuario_fk")
+  puntos_historial puntos_historial[]
+
+  @@index([id_contenedor], map: "idx_depositos_contenedor")
+  @@index([estado], map: "idx_depositos_estado")
+  @@index([qr_transaccion], map: "idx_depositos_qr")
+  @@index([id_usuario], map: "idx_depositos_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model puntos_historial {
+  id_historial String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario   String     @db.Uuid
+  id_deposito  String?    @db.Uuid
+  puntos       Int
+  tipo         String     @db.VarChar
+  descripcion  String?
+  creado_en    DateTime   @default(now()) @db.Timestamptz(6)
+  depositos    depositos? @relation(fields: [id_deposito], references: [id_deposito], onUpdate: NoAction, map: "ph_deposito_fk")
+  usuarios     usuarios   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "ph_usuario_fk")
+
+  @@index([id_usuario], map: "idx_puntos_usuario")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model roles {
+  id_rol      Int        @id
+  nombre      String     @unique @db.VarChar
+  descripcion String?
+  usuarios    usuarios[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model sesiones {
+  id_sesion   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario  String   @db.Uuid
+  token       String   @unique
+  dispositivo String?  @db.VarChar
+  ip_origen   String?  @db.VarChar
+  expira_en   DateTime @db.Timestamptz(6)
+  activo      Boolean  @default(true)
+  creado_en   DateTime @default(now()) @db.Timestamptz(6)
+  usuarios    usuarios @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "sesiones_usuario_fk")
+
+  @@index([id_usuario, activo], map: "idx_sesiones_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tipos_residuo {
+  id_tipo             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre              String                @db.VarChar
+  descripcion         String?
+  puntos_por_unidad   Int                   @default(1)
+  icono               String?               @db.VarChar
+  activo              Boolean               @default(true)
+  creado_en           DateTime              @default(now()) @db.Timestamptz(6)
+  contenedor_residuos contenedor_residuos[]
+  deposito_items      deposito_items[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios {
+  id_usuario       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String?            @unique @db.VarChar
+  nombres          String?            @db.VarChar
+  apellidos        String?            @db.VarChar
+  ci               String?            @unique @db.VarChar
+  id_rol           Int                @default(1)
+  estado           Int?               @default(1) @db.SmallInt
+  username         String?            @unique @db.VarChar
+  url_foto_perfil  String?
+  google_id        String?            @unique @db.VarChar
+  fecha_nac        DateTime?          @db.Date
+  genero           String?            @db.VarChar
+  telefono         String?            @db.VarChar
+  puntos_totales   Int                @default(0)
+  puntos_canjeados Int                @default(0)
+  creado_en        DateTime           @default(now()) @db.Timestamptz(6)
+  ultimo_login     DateTime?          @db.Timestamptz(6)
+  canjes           canjes[]
+  depositos        depositos[]
+  puntos_historial puntos_historial[]
+  sesiones         sesiones[]
+  roles            roles              @relation(fields: [id_rol], references: [id_rol], onUpdate: NoAction, map: "usuarios_rol_fk")
+}

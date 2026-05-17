@@ -14,12 +14,22 @@ export default function RegisterPage() {
       {/* ── LEFT: foto Cochabamba ── */}
       <div style={{ flex: '0 0 68%', position: 'relative', overflow: 'hidden' }}>
         <Image
-          src="/imagenes/cochabamba.jpg"
+          src="/imagenes/cachabamba.png"
           alt="Vista aérea de Cochabamba"
           fill
           style={{ objectFit: 'cover', objectPosition: 'center' }}
           priority
         />
+        <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 2, pointerEvents: 'none' }}>
+          <Image
+            src="/imagenes/logo-recipoint.png"
+            alt="ReciPoint"
+            width={140}
+            height={140}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        </div>
       </div>
 
       {/* ── RIGHT: panel ── */}

@@ -16,9 +16,9 @@ const ESTADO_COLOR: Record<Container['estado'], string> = {
 };
 
 const ESTADO_BG: Record<Container['estado'], string> = {
-  disponible:   '#f0fdf4',
-  lleno:        '#fff1f2',
-  mantenimiento:'#fffbeb',
+  disponible:   '#6fc46f',
+  lleno:        '#c05454',
+  mantenimiento:'#edbd42',
 };
 
 const ESTADO_LABEL: Record<Container['estado'], string> = {
@@ -227,7 +227,7 @@ export default function HomePage() {
                 >
                   {/* ── Card Header ── */}
                   <div style={{
-                    background: isSelected ? '#f5f3ff' : ESTADO_BG[c.estado],
+                    background: isSelected ? '#9b82d4' : ESTADO_BG[c.estado],
                     padding: '11px 13px 10px',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                     borderBottom: '1px solid rgba(0,0,0,0.05)',
@@ -235,7 +235,7 @@ export default function HomePage() {
                     <div style={{ flex: 1, paddingRight: 8 }}>
                       <p style={{
                         margin: 0, fontSize: '0.84rem', fontWeight: 700,
-                        color: '#0f172a', lineHeight: 1.25,
+                        color: '#fff', lineHeight: 1.25,
                       }}>
                         {shortName}
                       </p>
@@ -244,27 +244,26 @@ export default function HomePage() {
                         marginTop: 5, padding: '1px 7px', borderRadius: 20,
                         fontSize: '0.56rem', fontWeight: 700, letterSpacing: '0.05em',
                         textTransform: 'uppercase',
-                        background: 'rgba(255,255,255,0.7)',
-                        color: ESTADO_COLOR[c.estado],
-                        border: `1px solid ${ESTADO_COLOR[c.estado]}30`,
+                        background: 'rgba(0,0,0,0.18)',
+                        color: '#fff',
                       }}>
                         <span style={{
                           width: 5, height: 5, borderRadius: '50%',
-                          background: ESTADO_COLOR[c.estado],
+                          background: 'rgba(255,255,255,0.9)',
                         }} />
                         {ESTADO_LABEL[c.estado]}
                       </span>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <p style={{
-                        margin: 0, fontSize: '0.54rem', color: '#9ca3af',
+                        margin: 0, fontSize: '0.54rem', color: 'rgba(255,255,255,0.8)',
                         textTransform: 'uppercase', letterSpacing: '0.07em',
                       }}>
                         Promedio
                       </p>
                       <p style={{
                         margin: '2px 0 0', fontSize: '1.15rem', fontWeight: 800, lineHeight: 1,
-                        color: avgFill >= 80 ? '#dc2626' : avgFill >= 55 ? '#d97706' : '#16a34a',
+                        color: '#fff',
                       }}>
                         {avgFill}%
                       </p>

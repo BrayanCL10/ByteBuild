@@ -8,6 +8,16 @@ import { User } from '@/types/user';
 import { Container } from '@/types/container';
 import { fakeContainers } from '@/data/fakeContainers';
 import MapView from '@/components/MapView';
+import PointsModal from '@/components/PointsModal';
+import RedeemModal from '@/components/RedeemModal';
+
+const TIPO_COLOR: Record<Container['tipo'], string> = {
+  plastico: '#3b82f6',
+  papel: '#f59e0b',
+  vidrio: '#06b6d4',
+  organico: '#22c55e',
+  metal: '#6b7280',
+};
 
 const ESTADO_COLOR: Record<Container['estado'], string> = {
   disponible:   '#16a34a',
@@ -44,8 +54,8 @@ export default function HomePage() {
   const [user, setUser]         = useState<User | null>(null);
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState<Container | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapInstance = useRef<any>(null);
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [showPointsModal, setShowPointsModal] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then(u => {
@@ -108,15 +118,28 @@ export default function HomePage() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            background: '#f5f3ff', borderRadius: 20, padding: '4px 11px',
-          }}>
-            <span style={{ fontSize: '0.78rem' }}>⭐</span>
-            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#7c3aed' }}>
-              {user?.puntos ?? 0} pts
-            </span>
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              onClick={() => setShowPointsModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: '#f3ecff',
+                borderRadius: 20,
+                padding: '5px 13px',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: '0.95rem' }}>⭐</span>
+              <span style={{ fontSize: '0.83rem', fontWeight: 700, color: '#6B3FA0' }}>
+                {user?.puntos ?? 0} pts
+              </span>
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -339,6 +362,22 @@ export default function HomePage() {
           </div>
         </aside>
       </div>
+
+      <PointsModal
+        isOpen={showPointsModal}
+        onClose={() => setShowPointsModal(false)}
+        onCanjear={() => setShowRedeemModal(true)}
+        puntos={user?.puntos ?? 0}
+      />
+
+      <RedeemModal
+        isOpen={showRedeemModal}
+        puntos={user?.puntos ?? 0}
+        onClose={() => setShowRedeemModal(false)}
+        onCanjear={() => {
+          setShowRedeemModal(false);
+        }}
+      />
     </div>
   );
 }
